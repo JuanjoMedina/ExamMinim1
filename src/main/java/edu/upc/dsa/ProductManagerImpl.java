@@ -1,6 +1,7 @@
 package edu.upc.dsa;
 
 import edu.upc.dsa.models.Producte;
+import org.apache.log4j.Logger;
 
 import java.util.*;
 
@@ -9,10 +10,11 @@ public class  ProductManagerImpl implements ProductManager {
     private Queue<Pedido> Comandas;
     private Map<String, Producte> listProductes;
     private Map<String, Usuario> Usuarios;
+    final static Logger logger = Logger.getLogger(ProductManagerImpl.class);
     private ProductManagerImpl(){
         this.Comandas=new LinkedList<>();
-        this.listProductes=new HashMap();
-        this.Usuarios=new HashMap();
+        this.listProductes= new HashMap<>();
+        this.Usuarios=new HashMap<>();
     }
     public static ProductManagerImpl getInstance(){
         if (Instance==null)
@@ -45,6 +47,9 @@ public class  ProductManagerImpl implements ProductManager {
             Usuarios.put(p.getNombre(), user);
         }
         this.Comandas.add(p);
+        logger.info("Comanda anotada");
+        logger.warn("Example warning");
+        logger.error("Example error");
     }
 
     public void servirComanda() {

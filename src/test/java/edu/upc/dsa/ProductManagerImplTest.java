@@ -1,6 +1,7 @@
 package edu.upc.dsa;
 
 import edu.upc.dsa.models.Producte;
+import org.apache.log4j.Logger;
 import org.junit.*;
 
 import java.util.*;
@@ -14,6 +15,7 @@ public class ProductManagerImplTest {
     List<Producte> priceSortedList=null;
     List<Producte> ventasSortedList=null;
     Queue<Pedido> queue = new LinkedList<>();
+    Logger logger = Logger.getLogger(ProductManagerImplTest.class);
 
     //Usuarios
     Pedido Ppere = new Pedido("Pere");
