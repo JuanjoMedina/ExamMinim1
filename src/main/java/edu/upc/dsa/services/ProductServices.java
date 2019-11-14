@@ -2,7 +2,6 @@ package edu.upc.dsa.services;
 
 
 import edu.upc.dsa.*;
-import edu.upc.dsa.models.Producte;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -12,87 +11,118 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.lang.reflect.Array;
 import java.util.*;
 
 @Api(value = "/", description = "Endpoint to Track Service")
 @Path("/")
 public class ProductServices {
 
-    private ProductManager pm;
+    private GameManager gm;
+    static private Boolean entrada=true;
 
     public ProductServices() {
-        this.pm = ProductManagerImpl.getInstance();
-        ProductManagerImpl Impl= ProductManagerImpl.getInstance();
-        Producte CocaCola=new Producte("CocaCola",2,0);
-        Producte Bocata=new Producte("Bocata",4,0);
-        Producte Aquarius=new Producte("Aquarius",3,0);
-        Producte Croissant=new Producte("Croissant",1,0);
-        Map<String,Producte> listProductes= Map.of("CocaCola",CocaCola ,"Bocata",Bocata,"Aquarius",Aquarius,"Croissant",Croissant);
-        Impl.setListProductes(listProductes);
+        this.gm = GameManagerImpl.getInstance();
+        if (entrada){
+        GameManagerImpl Impl = GameManagerImpl.getInstance();
+        Usuario juan = new Usuario("Juan", "Perez");
+        gm.addUser(juan);
+        Usuario andrea = new Usuario("Andrea", "Sanchez");
+        gm.addUser(andrea);
+        Usuario pere = new Usuario("Pere", "Coll");
+        gm.addUser(pere);
+        entrada=false;
+        }
+
     }
 
     @GET
-    @ApiOperation(value = "Get all Products", notes = "Te da todos los productos")
+    @ApiOperation(value = "Get All Users", notes = "Te da todos los Usuarios")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful", response = Producte.class, responseContainer="List"),
+            @ApiResponse(code = 201, message = "Successful", response = Usuario.class, responseContainer="List"),
     })
-    @Path("/products")
+    @Path("/users")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getProducts() {
+    public Response getUsers() {
 
-        List<Producte> products = new ArrayList<>(ProductManagerImpl.getInstance().getListProductes().values());
+        List<Usuario> users = gm.listAlpha();
 
-        GenericEntity<List<Producte>> entity = new GenericEntity<>(products){};
+        GenericEntity<List<Usuario>> entity = new GenericEntity<>(users){};
         return Response.status(201).entity(entity).build()  ;
     }
 
     @POST
-    @ApiOperation(value = "create a new pedido", notes = "holi")
+    @ApiOperation(value = "Create new user", notes = "hola")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful", response=Pedido.class),
+            @ApiResponse(code = 201, message = "Successful", response=Usuario.class),
             @ApiResponse(code = 500, message = "Validation Error")
 
     })
 
-    @Path("/comandas")
+    @Path("/adduser")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response newComanda(Pedido p) {
-        if (p.getNombre()==null || p.getLiniaPedido()==null)  return Response.status(500).entity(p).build();
-        this.pm.AnotarComanda(p);
-        for (int i=0;i<p.getLiniaPedido().size();i++) {
-            if (ProductManagerImpl.getInstance().getListProductes().get(p.getLiniaPedido().get(i).getProducte()) == null)
-                return Response.status(500).entity(p).build();
-            else
-                pm.getListProductes().get(p.getLiniaPedido().get(i).getProducte()).incrCantidad(p.getLiniaPedido().get(i).getCantidad());
+    public Response newUser(Usuario u) {
+        if (u.getNombre()==null || u.getApellidos()==null)  return Response.status(500).entity(u).build();
+        this.gm.addUser(u);
 
-        }
-        return Response.status(201).entity(p).build();
+        return Response.status(201).entity(u).build();
     }
+    @PUT
+    @ApiOperation(value = "Update User", notes = "asdasd")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful"),
+            @ApiResponse(code = 404, message = "User not Found")
+    })
+    @Path("/modifyUser")
+    public Response updateUser(Usuario u) {
+
+        Usuario user =gm.modifyUser(u.getId(),u.getNombre(),u.getApellidos(),u.getListaObjetos());
+
+        if (user == null) return Response.status(404).build();
+
+        return Response.status(201).build();
+    }
+
 
 
     @GET
-    @ApiOperation(value = "Ver Comanadas", notes = "Vas a ver las comandasssssss")
+    @ApiOperation(value = "Get Info of User", notes = "You will see the infoooo")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful", response = Pedido.class, responseContainer="List"),
+            @ApiResponse(code = 201, message = "Successful", response = Usuario.class, responseContainer=""),
     })
-    @Path("/comandas")
+    @Path("/users/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response manager() {
-        GenericEntity<Queue<Pedido>> entity = new GenericEntity<>(pm.getComandas()){};
+    public Response userInfo(@PathParam("id") String id) {
+
+        GenericEntity<Usuario> entity = new GenericEntity<>(gm.infoUser(id)){};
         return Response.status(201).entity(entity).build()  ;
 
     }
+    @GET
+    @ApiOperation(value = "Get Objects of User", notes = "You will see the infoooo")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful", response = Objeto.class, responseContainer="List"),
+    })
+    @Path("/users/objects/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response userObjects(@PathParam("id") String id) {
 
-    @DELETE
-    @ApiOperation(value = "Servir Comanda", notes = "Sirve la ultima comanda")
+        GenericEntity<List<Objeto>> entity = new GenericEntity<>(gm.getListObjects(id)){};
+        return Response.status(201).entity(entity).build()  ;
+
+    }
+    @PUT
+    @ApiOperation(value = "Add Object", notes = "asdasd")
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful"),
-            @ApiResponse(code = 404, message = "No comandas left")
+            @ApiResponse(code = 404, message = "User not Found")
     })
-    @Path("/servir")
-    public Response SC() {
-        this.pm.servirComanda();
+    @Path("/addObject")
+    public Response addObject(Usuario u) {
+
+        int error = gm.addObject(new Objeto("Hacha","Tala bien los árboles"),u.getId());
+
+        if (error == -1) return Response.status(404).build();
+
         return Response.status(201).build();
     }
 /*
@@ -110,24 +140,9 @@ public class ProductServices {
         else  return Response.status(201).entity(t).build();
     }
 
-   @PUT
-    @ApiOperation(value = "update a Track", notes = "asdasd")
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful"),
-            @ApiResponse(code = 404, message = "Track not found")
-    })
-    @Path("/")
-    public Response updateTrack(Track track) {
 
-        Track t = this.pm.updateTrack(track);
-
-        if (t == null) return Response.status(404).build();
-
-        return Response.status(201).build();
-    }
-
-*/
 
 
 
+*/
 }
