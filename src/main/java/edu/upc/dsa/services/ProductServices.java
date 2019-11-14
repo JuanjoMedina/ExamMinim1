@@ -118,10 +118,10 @@ public class ProductServices {
             @ApiResponse(code = 201, message = "Successful"),
             @ApiResponse(code = 404, message = "User not Found")
     })
-    @Path("/addObject")
-    public Response addObject(Usuario u) {
+    @Path("/addObject/{id}")
+    public Response addObject(Objeto o, @PathParam("id") String id) {
 
-        int error = gm.addObject(new Objeto("Hacha","Tala bien los árboles"),u.getId());
+        int error = gm.addObject(o,id);
 
         if (error == -1) return Response.status(404).build();
 
